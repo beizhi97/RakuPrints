@@ -13,6 +13,9 @@ from app.backend.printer_utils import (
 )
 from app.model.print_job import PrintJob
 
+from app.i18n import t
+
+
 
 def _resolve_printer_name(job: PrintJob) -> str:
     if job.printer_name:
@@ -31,7 +34,7 @@ def _assert_printer_paper_supported(printer_name: str, paper_size: str) -> None:
     except Exception:
         return
     if sizes and not is_supported_name(paper_size, sizes):
-        raise RuntimeError("プリンターが選択した用紙サイズに対応していません。")
+        raise RuntimeError(t("error_paper_unsupported"))
 
 
 class ExcelBackend:
@@ -43,7 +46,7 @@ class ExcelBackend:
             import pythoncom  # type: ignore
             import win32com.client  # type: ignore
         except Exception as exc:
-            raise RuntimeError("Excel 印刷には pywin32 が必要です。") from exc
+            raise RuntimeError(t("error_office_dependency", application="Excel")) from exc
 
         pythoncom.CoInitialize()
         app = None
@@ -73,7 +76,7 @@ class ExcelBackend:
             import pythoncom  # type: ignore
             import win32com.client  # type: ignore
         except Exception as exc:
-            raise RuntimeError("Excel 印刷には pywin32 が必要です。") from exc
+            raise RuntimeError(t("error_office_dependency", application="Excel")) from exc
 
         pythoncom.CoInitialize()
         app = None
@@ -111,11 +114,11 @@ class ExcelBackend:
                             default_changed = True
                         else:
                             raise RuntimeError(
-                                "Excel がプリンターを指定できません。Excel の既定プリンターに切り替えると印刷できます。"
+                                t("error_excel_printer")
                             )
             if job_printer and not resolved_name and not default_changed:
                 raise RuntimeError(
-                    "Excel がプリンターを指定できません。Excel の既定プリンターに切り替えると印刷できます。"
+                    t("error_excel_printer")
                 )
             paper_const = _excel_paper_constant(job.paper_size, win32com.client.constants)
             _assert_excel_paper_matches(workbook, job.excel_sheets, paper_const)
@@ -126,7 +129,7 @@ class ExcelBackend:
                     try:
                         sheet = workbook.Worksheets(name)
                     except Exception as exc:
-                        raise RuntimeError(f"シートが見つかりません: {name}") from exc
+                        raise RuntimeError(t("error_sheet_missing_fmt", name=name)) from exc
                     if paper_const is not None:
                         sheet.PageSetup.PaperSize = paper_const
                     if auto_orientation:
@@ -173,13 +176,13 @@ def _assert_excel_paper_matches(workbook, sheet_names: list[str], paper_const: i
         try:
             sheet = workbook.Worksheets(name)
         except Exception as exc:
-            raise RuntimeError(f"シートが見つかりません: {name}") from exc
+            raise RuntimeError(t("error_sheet_missing_fmt", name=name)) from exc
         try:
             current = int(sheet.PageSetup.PaperSize)
         except Exception as exc:
-            raise RuntimeError("Excel の用紙サイズを確認できません。") from exc
+            raise RuntimeError(t("error_excel_paper_check")) from exc
         if current != paper_const:
-            raise RuntimeError(f"Excel の用紙サイズが選択したサイズと一致しません。 (シート: {name})")
+            raise RuntimeError(t("error_excel_paper_mismatch_fmt", name=name))
 
 
 def _excel_paper_constant(name: str, constants) -> int | None:

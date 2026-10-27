@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from pathlib import Path
 
 import json
@@ -11,6 +12,9 @@ from app.model.print_job import PrintJob
 from app.backend.pdf_options import resolve_pdf_options
 from app.backend.paper_utils import is_supported_name, normalize_name, size_key_from_points
 from app.backend.printer_utils import get_default_printer_name, list_paper_sizes
+
+from app.i18n import t
+
 
 
 def _resolve_printer_name(job: PrintJob) -> str:
@@ -30,7 +34,7 @@ def _assert_printer_paper_supported(printer_name: str, paper_size: str) -> None:
     except Exception:
         return
     if sizes and not is_supported_name(paper_size, sizes):
-        raise RuntimeError("プリンターが選択した用紙サイズに対応していません。")
+        raise RuntimeError(t("error_paper_unsupported"))
 
 
 def _assert_pdf_paper_matches(doc, paper_size: str) -> None:
@@ -45,8 +49,7 @@ def _assert_pdf_paper_matches(doc, paper_size: str) -> None:
         page_key = size_key_from_points(rect.width, rect.height)
         if page_key and page_key != target_key:
             raise RuntimeError(
-                f"PDF の用紙サイズが選択したサイズと一致しません。"
-                f" (ページ {page_index + 1}: {page_key}, 選択: {target_key})"
+                t("error_pdf_paper_mismatch_fmt", page=page_index + 1, actual=page_key, selected=target_key)
             )
 
 
@@ -62,21 +65,21 @@ class PdfBackend:
 
     def print(self, job: PrintJob) -> None:
         if not Path(job.file_path).exists():
-            raise RuntimeError("ファイルが見つかりません。")
+            raise RuntimeError(t("error_file_missing"))
 
         try:
             import fitz  # type: ignore
         except Exception as exc:
-            raise RuntimeError("PDF 印刷には PyMuPDF が必要です。") from exc
+            raise RuntimeError(t("error_pdf_dependency")) from exc
 
         try:
             doc = fitz.open(job.file_path)
             page_count = int(getattr(doc, "page_count", 0) or 0)
         except Exception as exc:
-            raise RuntimeError("PDF の読み込みに失敗しました。") from exc
+            raise RuntimeError(t("error_pdf_read")) from exc
         try:
             if page_count <= 0:
-                raise RuntimeError("PDF のページが見つかりません。")
+                raise RuntimeError(t("error_pdf_empty"))
             printer_name = _resolve_printer_name(job)
             _assert_printer_paper_supported(printer_name, job.paper_size)
             _assert_pdf_paper_matches(doc, job.paper_size)
@@ -128,8 +131,8 @@ class PdfBackend:
                 timeout=300,
             )
         except subprocess.TimeoutExpired as exc:
-            raise RuntimeError("PDF 印刷がタイムアウトしました。") from exc
+            raise RuntimeError(t("error_pdf_timeout")) from exc
 
         if result.returncode != 0:
-            message = result.stderr.strip() or result.stdout.strip() or "PDF の印刷に失敗しました。"
+            message = result.stderr.strip() or result.stdout.strip() or t("error_pdf_print")
             raise RuntimeError(message)

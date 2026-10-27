@@ -4,6 +4,8 @@ import sys
 
 from PySide6 import QtGui, QtWidgets
 
+from app.ui.language import apply_ui_font
+
 
 def detect_system_theme() -> str:
     if sys.platform != "win32":
@@ -62,7 +64,7 @@ def _accent_hex() -> str:
 def apply_theme(app: QtWidgets.QApplication, mode: str) -> None:
     theme = resolve_theme(mode)
     app.setStyle("Fusion")
-    app.setFont(QtGui.QFont("Yu Gothic UI", 11))
+    apply_ui_font(app)
     accent = _accent_hex()
 
     if theme == "dark":

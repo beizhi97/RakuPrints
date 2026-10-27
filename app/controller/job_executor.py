@@ -12,6 +12,9 @@ from app.backend.word_backend import WordBackend
 from app.backend.excel_backend import ExcelBackend
 from app.backend.ppt_backend import PptBackend
 
+from app.i18n import t
+
+
 
 class JobExecutor(QtCore.QThread):
     job_status = QtCore.Signal(str, object, str)
@@ -66,7 +69,7 @@ class JobExecutor(QtCore.QThread):
                 self.job_status.emit(job.id, JobStatus.SUCCESS, "")
             except Exception as exc:
                 self._logger.exception("Print failed for %s", job.file_path)
-                message = str(exc) or "予期しないエラーが発生しました。"
+                message = str(exc) or t("error_unexpected")
                 self.job_status.emit(job.id, JobStatus.FAILED, message)
                 self.job_failed.emit(job.id)
             finally:
@@ -84,7 +87,7 @@ class JobExecutor(QtCore.QThread):
             return ExcelBackend(self._context)
         if job.file_type == FileType.PPT:
             return PptBackend(self._context)
-        raise RuntimeError("Unsupported file type")
+        raise RuntimeError(t("error_unsupported_file"))
 
     def _mark_remaining_as_cancelled(self, current_job: PrintJob, jobs: list[PrintJob]) -> None:
         mark = False
@@ -92,4 +95,4 @@ class JobExecutor(QtCore.QThread):
             if job.id == current_job.id:
                 mark = True
             if mark:
-                self.job_status.emit(job.id, JobStatus.CANCELLED, "キャンセルしました")
+                self.job_status.emit(job.id, JobStatus.CANCELLED, t("msg_job_cancelled"))

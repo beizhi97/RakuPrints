@@ -1,5 +1,11 @@
 # RakuPrints (らーく印刷)
 
+**简体中文：[中文说明与源码运行指南](README.zh-CN.md)** · [中文使用说明](docs/USAGE.zh-CN.md)
+
+This fork includes Chinese UI improvements. Use this fork's source or its own
+[Releases](https://github.com/beizhi97/RakuPrints/releases) for these changes;
+upstream installers do not include them.
+
 <img src="assets/icon.png" width="80">
 
 A Windows app for printing a lot of files at once.
@@ -24,12 +30,13 @@ anything reaches paper keeps a wrong setting from becoming a hundred wasted page
 - Automatic page-orientation detection for Excel sheets
 - Pre-print preview, to catch a wrong setting before paper is used
 - Progress and result display, with error logging
-- Drag and drop, Japanese/English UI, dark and light themes
+- Drag and drop, Japanese/English/Korean/Simplified Chinese UI, dark and light themes
 
 ## Using it
 
 Download `RakuPrint_Setup_x.x.x.exe` from
-[Releases](https://github.com/sukun-inu/RakuPrints/releases) and run it.
+[this fork's Releases](https://github.com/beizhi97/RakuPrints/releases) and run it, if a
+build has been published. Otherwise, follow the [source run instructions](README.zh-CN.md).
 
 1. Start the app
 2. Drag in the files you want printed
@@ -47,7 +54,8 @@ does not need it.
 | [docs/ARCHITECTURE.ja.md](docs/ARCHITECTURE.ja.md) | Feature overview, architecture, data flow |
 | [docs/DEVELOPMENT.ja.md](docs/DEVELOPMENT.ja.md) | Building and running, config files, contributing |
 
-Detailed documentation is Japanese-only for now.
+Chinese usage documentation is available in [docs/USAGE.zh-CN.md](docs/USAGE.zh-CN.md).
+Architecture and development documentation is in Japanese.
 
 ## Licence
 

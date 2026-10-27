@@ -5,7 +5,7 @@
 #define MyAppNameEn "RakuPrint"
 #define MyAppVersion "0.3.3"
 #define MyAppPublisher "Hibiki Suzuki"
-#define MyAppURL "https://github.com/sukun-inu/RakuPrints"
+#define MyAppURL "https://github.com/beizhi97/RakuPrints"
 #define MyAppExeName "RakuPrint.exe"
 
 [Setup]

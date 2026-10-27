@@ -8,6 +8,9 @@ from app.backend.paper_utils import is_supported_name
 from app.backend.printer_utils import get_default_printer_name, list_paper_sizes
 from app.model.print_job import PrintJob
 
+from app.i18n import t
+
+
 
 def _resolve_printer_name(job: PrintJob) -> str:
     if job.printer_name:
@@ -26,7 +29,7 @@ def _assert_printer_paper_supported(printer_name: str, paper_size: str) -> None:
     except Exception:
         return
     if sizes and not is_supported_name(paper_size, sizes):
-        raise RuntimeError("プリンターが選択した用紙サイズに対応していません。")
+        raise RuntimeError(t("error_paper_unsupported"))
 
 
 class WordBackend:
@@ -38,7 +41,7 @@ class WordBackend:
             import pythoncom  # type: ignore
             import win32com.client  # type: ignore
         except Exception as exc:
-            raise RuntimeError("Word 印刷には pywin32 が必要です。") from exc
+            raise RuntimeError(t("error_office_dependency", application="Word")) from exc
 
         pythoncom.CoInitialize()
         app = None
@@ -57,7 +60,7 @@ class WordBackend:
             if paper_const is not None:
                 doc_const = doc.PageSetup.PaperSize
                 if doc_const != paper_const:
-                    raise RuntimeError("Word の用紙サイズが選択したサイズと一致しません。")
+                    raise RuntimeError(t("error_paper_mismatch", application="Word"))
                 doc.PageSetup.PaperSize = paper_const
             _apply_word_centering(doc)
             doc.PrintOut(Copies=job.copies, Background=False)

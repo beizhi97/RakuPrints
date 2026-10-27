@@ -279,10 +279,10 @@ class SettingsPanel(QtWidgets.QWidget):
             self.duplex_combo.addItem(t("duplex_off"), duplex_off_value)
             self.duplex_combo.addItem(t("duplex_long"), duplex_long_value)
             self.duplex_combo.addItem(t("duplex_short"), duplex_short_value)
-        if current:
-            index = self.duplex_combo.findData(current)
-            if index >= 0:
-                self.duplex_combo.setCurrentIndex(index)
+            if current:
+                index = self.duplex_combo.findData(current)
+                if index >= 0:
+                    self.duplex_combo.setCurrentIndex(index)
 
     def _refresh_excel_orientation_items(self) -> None:
         current = self.excel_orientation_combo.currentData()
@@ -291,10 +291,10 @@ class SettingsPanel(QtWidgets.QWidget):
             self.excel_orientation_combo.addItem(t("settings_excel_auto"), "auto")
             self.excel_orientation_combo.addItem(t("settings_excel_ask"), "ask")
             self.excel_orientation_combo.addItem(t("settings_excel_none"), "none")
-        if current:
-            index = self.excel_orientation_combo.findData(current)
-            if index >= 0:
-                self.excel_orientation_combo.setCurrentIndex(index)
+            if current:
+                index = self.excel_orientation_combo.findData(current)
+                if index >= 0:
+                    self.excel_orientation_combo.setCurrentIndex(index)
 
     def _refresh_pdf_scale_mode_items(self) -> None:
         current = self.pdf_scale_mode_combo.currentData()
@@ -304,10 +304,10 @@ class SettingsPanel(QtWidgets.QWidget):
             self.pdf_scale_mode_combo.addItem(t("pdf_scale_fit"), "fit")
             self.pdf_scale_mode_combo.addItem(t("pdf_scale_shrink"), "shrink")
             self.pdf_scale_mode_combo.addItem(t("pdf_scale_none"), "none")
-        if current:
-            index = self.pdf_scale_mode_combo.findData(current)
-            if index >= 0:
-                self.pdf_scale_mode_combo.setCurrentIndex(index)
+            if current:
+                index = self.pdf_scale_mode_combo.findData(current)
+                if index >= 0:
+                    self.pdf_scale_mode_combo.setCurrentIndex(index)
 
     def _refresh_theme_items(self) -> None:
         current = self.theme_combo.currentData()
@@ -316,10 +316,10 @@ class SettingsPanel(QtWidgets.QWidget):
             self.theme_combo.addItem(t("settings_theme_system"), "system")
             self.theme_combo.addItem(t("settings_theme_light"), "light")
             self.theme_combo.addItem(t("settings_theme_dark"), "dark")
-        if current:
-            index = self.theme_combo.findData(current)
-            if index >= 0:
-                self.theme_combo.setCurrentIndex(index)
+            if current:
+                index = self.theme_combo.findData(current)
+                if index >= 0:
+                    self.theme_combo.setCurrentIndex(index)
 
     def _refresh_language_items(self) -> None:
         current = self.language_combo.currentData()
@@ -330,10 +330,10 @@ class SettingsPanel(QtWidgets.QWidget):
             for code in ["system", "ja", "en", "ko", "zh"]:
                 label = LANGUAGES.get(code, {}).get(lang, code)
                 self.language_combo.addItem(label, code)
-        if current:
-            index = self.language_combo.findData(current)
-            if index >= 0:
-                self.language_combo.setCurrentIndex(index)
+            if current:
+                index = self.language_combo.findData(current)
+                if index >= 0:
+                    self.language_combo.setCurrentIndex(index)
 
     def set_settings(
         self,

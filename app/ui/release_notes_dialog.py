@@ -8,9 +8,9 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from app.i18n import t
 from app.net.http_utils import urlopen
+from app.version import REPO_SLUG
 
 
-REPO_SLUG = "sukun-inu/RakuPrints"
 GITHUB_RELEASES_API = "https://api.github.com/repos/{slug}/releases?per_page=30"
 
 

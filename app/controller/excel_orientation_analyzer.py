@@ -15,6 +15,9 @@ class ExcelOrientationResult:
     recommendation: str
     reason: str
 
+from app.i18n import t
+
+
 
 class ExcelOrientationAnalyzer(QtCore.QThread):
     completed = QtCore.Signal(list)
@@ -29,7 +32,7 @@ class ExcelOrientationAnalyzer(QtCore.QThread):
             import pythoncom  # type: ignore
             import win32com.client  # type: ignore
         except Exception as exc:
-            self.failed.emit("Excel の解析には pywin32 が必要です。")
+            self.failed.emit(t("error_excel_analysis_dependency"))
             return
 
         results: list[ExcelOrientationResult] = []
@@ -56,8 +59,8 @@ class ExcelOrientationAnalyzer(QtCore.QThread):
                             landscape += 1
                         else:
                             portrait += 1
-                    recommendation = "横向き" if landscape > portrait else "縦向き"
-                    reason = "横幅 > 縦幅" if recommendation == "横向き" else "縦幅 >= 横幅"
+                    recommendation = "landscape" if landscape > portrait else "portrait"
+                    reason = f"orientation_{recommendation}_reason"
                     results.append(
                         ExcelOrientationResult(
                             job_id=job.id,
@@ -71,8 +74,8 @@ class ExcelOrientationAnalyzer(QtCore.QThread):
                         ExcelOrientationResult(
                             job_id=job.id,
                             file_name=job.file_name,
-                            recommendation="判定できません",
-                            reason="解析できませんでした",
+                            recommendation="unknown",
+                            reason="error_excel_analysis",
                         )
                     )
                 finally:
@@ -81,7 +84,7 @@ class ExcelOrientationAnalyzer(QtCore.QThread):
             app.Quit()
             del app
         except Exception:
-            self.failed.emit("Excel の向きを解析できませんでした。")
+            self.failed.emit(t("error_excel_analysis"))
             return
         finally:
             gc.collect()

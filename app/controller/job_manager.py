@@ -206,23 +206,23 @@ class JobManager(QtCore.QObject):
     @staticmethod
     def _summarize_message(message: str) -> str:
         text = message.lower()
-        if ("pymupdf" in text or "fitz" in text) and ("必要" in message or "required" in text):
-            return "PDF 印刷に必要な部品が見つかりません。"
+        if ("pymupdf" in text or "fitz" in text) and ("必要" in message or "required" in text or "requires" in text or "需要" in text or "필요" in text):
+            return t("summary_pdf_dependency")
         if "pywin32" in text or "win32com" in text:
-            return "Office 印刷に必要な部品が見つかりません。"
-        if "用紙サイズ" in message or "paper size" in text:
-            if "一致" in message or "match" in text:
-                return "用紙サイズが一致しません。"
-            if "対応" in message or "support" in text:
-                return "プリンターが用紙サイズに対応していません。"
-            return "用紙サイズに問題があります。"
-        if "ファイルが見つかりません" in message or "file not found" in text:
-            return "ファイルが見つかりません。"
-        if "printer" in text or "プリンター" in message:
-            return "プリンターに接続できません。"
-        if "access is denied" in text or "権限" in message:
-            return "権限が足りません。"
-        return "印刷に失敗しました。"
+            return t("summary_office_dependency")
+        if "用紙サイズ" in message or "paper size" in text or "纸张尺寸" in text or "용지 크기" in text:
+            if "一致" in message or "match" in text or "不一致" in text or "일치" in text:
+                return t("summary_paper_mismatch")
+            if "対応" in message or "support" in text or "不支持" in text or "지원" in text:
+                return t("error_paper_unsupported")
+            return t("summary_paper_error")
+        if "ファイルが見つかりません" in message or "file not found" in text or "找不到文件" in text or "파일을 찾을 수" in text:
+            return t("error_file_missing")
+        if "printer" in text or "プリンター" in message or "打印机" in text or "프린터" in text:
+            return t("summary_printer_connection")
+        if "access is denied" in text or "権限" in message or "权限" in text or "권한" in text:
+            return t("summary_permission")
+        return t("msg_print_failed")
 
     def apply_rules(self, force: bool = False) -> None:
         for job in self._jobs:

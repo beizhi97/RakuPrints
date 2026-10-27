@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from typing import List
 
 import json
@@ -9,12 +10,15 @@ import subprocess
 import sys
 import time
 
+from app.i18n import t
+
+
 
 def _require_win32print():
     try:
         import win32print  # type: ignore
     except Exception as exc:
-        raise RuntimeError("Windows でプリンター一覧を取得するには pywin32 が必要です。") from exc
+        raise RuntimeError(t("error_printer_dependency")) from exc
     return win32print
 
 
@@ -71,7 +75,7 @@ def get_default_printer_name() -> str:
 
 def open_printer_properties(printer_name: str) -> None:
     if not printer_name:
-        raise RuntimeError("プリンターが見つかりません。")
+        raise RuntimeError(t("error_printer_missing"))
     cmd = ["rundll32.exe", "printui.dll,PrintUIEntry", "/p", "/n", printer_name]
     creationflags = 0
     if hasattr(subprocess, "CREATE_NO_WINDOW"):

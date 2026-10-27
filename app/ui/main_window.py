@@ -28,6 +28,7 @@ from app.ui.progress_dialog import ProgressDialog
 from app.ui.about_dialog import AboutDialog
 from app.ui.log_summary_dialog import LogSummaryDialog
 from app.ui.theme import apply_theme
+from app.ui.language import apply_ui_language
 from app.ui.excel_sheet_selector import ExcelSheetSelectorDialog
 from app.ui.excel_orientation_dialog import ExcelOrientationDialog
 from app.ui.pdf_options_dialog import PdfOptionsDialog
@@ -355,7 +356,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.move_down_action.setEnabled(can_move_down)
 
     def _on_add_files(self) -> None:
-        filter_text = "印刷できるファイル (*.pdf *.doc *.docx *.xls *.xlsx *.xlsm *.ppt *.pptx)"
+        filter_text = t("file_filter_printable") + " (*.pdf *.doc *.docx *.xls *.xlsx *.xlsm *.ppt *.pptx)"
         files, _ = QtWidgets.QFileDialog.getOpenFileNames(self, t("action_add_files"), "", filter_text)
         if files:
             self._job_manager.add_files(files)
@@ -565,6 +566,9 @@ class MainWindow(QtWidgets.QMainWindow):
         with QtCore.QSignalBlocker(self._context):
             self._context.update_setting(language_mode=mode)
         set_language(resolve_language(mode))
+        app = QtWidgets.QApplication.instance()
+        if app:
+            apply_ui_language(app)
         self._apply_language()
         self._refresh_settings()
 
@@ -961,7 +965,7 @@ class MainWindow(QtWidgets.QMainWindow):
         items = [
             (result.job_id, result.file_name, result.recommendation, result.reason)
             for result in results
-            if result.recommendation in ("横向き", "縦向き")
+            if result.recommendation in ("landscape", "portrait")
         ]
         if items:
             selected_ids, ok = ExcelOrientationDialog.get_selection(items, self)

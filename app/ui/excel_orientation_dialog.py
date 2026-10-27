@@ -14,7 +14,7 @@ class ExcelOrientationDialog(QtWidgets.QDialog):
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.resize(520, 360)
+        self.resize(720, 360)
 
         self._items = list(items)
 
@@ -24,7 +24,13 @@ class ExcelOrientationDialog(QtWidgets.QDialog):
         layout.addWidget(self.label)
 
         self.table = QtWidgets.QTableWidget(0, 4)
-        self.table.horizontalHeader().setStretchLastSection(True)
+        header = self.table.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Interactive)
+        header.resizeSection(0, 220)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
         self.table.verticalHeader().setVisible(False)
         self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -71,8 +77,11 @@ class ExcelOrientationDialog(QtWidgets.QDialog):
         for row, (_job_id, file_name, recommendation, reason) in enumerate(self._items):
             self.table.insertRow(row)
             self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(file_name))
-            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(recommendation))
-            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(reason))
+            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(t(f"orientation_{recommendation}")))
+            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(t(reason)))
+            for column in range(3):
+                item = self.table.item(row, column)
+                item.setToolTip(item.text())
             checkbox = QtWidgets.QTableWidgetItem("")
             checkbox.setFlags(checkbox.flags() | QtCore.Qt.ItemIsUserCheckable)
             checkbox.setCheckState(QtCore.Qt.Checked)

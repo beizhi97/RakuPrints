@@ -1,5 +1,7 @@
 # らーく印刷 (RakuPrints)
 
+简体中文：[README.zh-CN.md](README.zh-CN.md)
+
 <img src="assets/icon.png" width="80">
 
 たくさんのファイルをまとめて印刷するための Windows アプリです。

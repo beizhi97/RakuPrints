@@ -17,6 +17,7 @@ from app.app_context import AppContext
 from app.controller.job_manager import JobManager
 from app.ui.main_window import MainWindow
 from app.ui.theme import apply_theme
+from app.ui.language import apply_ui_language
 from app.ui.icon_data import ICON_PNG_BASE64
 from app.backend import pdf_worker
 from app.i18n import set_language, resolve_language
@@ -70,6 +71,7 @@ def main() -> int:
     app = QtWidgets.QApplication(sys.argv)
     context = AppContext()
     set_language(resolve_language(context.settings.language_mode))
+    apply_ui_language(app)
     _apply_window_icon(app)
     apply_theme(app, context.settings.theme_mode)
     configure_logging(str(context.log_path))

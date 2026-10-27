@@ -8,6 +8,9 @@ from app.backend.paper_utils import is_supported_name, normalize_name, size_key_
 from app.backend.printer_utils import get_default_printer_name, list_paper_sizes
 from app.model.print_job import PrintJob
 
+from app.i18n import t
+
+
 
 def _resolve_printer_name(job: PrintJob) -> str:
     if job.printer_name:
@@ -26,7 +29,7 @@ def _assert_printer_paper_supported(printer_name: str, paper_size: str) -> None:
     except Exception:
         return
     if sizes and not is_supported_name(paper_size, sizes):
-        raise RuntimeError("プリンターが選択した用紙サイズに対応していません。")
+        raise RuntimeError(t("error_paper_unsupported"))
 
 
 class PptBackend:
@@ -38,7 +41,7 @@ class PptBackend:
             import pythoncom  # type: ignore
             import win32com.client  # type: ignore
         except Exception as exc:
-            raise RuntimeError("PowerPoint 印刷には pywin32 が必要です。") from exc
+            raise RuntimeError(t("error_office_dependency", application="PowerPoint")) from exc
 
         pythoncom.CoInitialize()
         app = None
@@ -58,7 +61,7 @@ class PptBackend:
                     height_pt = float(presentation.PageSetup.SlideHeight)
                     slide_key = size_key_from_points(width_pt, height_pt)
                     if slide_key and slide_key != target_key:
-                        raise RuntimeError("PowerPoint の用紙サイズが選択したサイズと一致しません。")
+                        raise RuntimeError(t("error_paper_mismatch", application="PowerPoint"))
             if job.printer_name:
                 app.ActivePrinter = job.printer_name
             presentation.PrintOut(Copies=job.copies)

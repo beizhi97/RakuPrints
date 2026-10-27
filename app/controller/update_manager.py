@@ -10,16 +10,17 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.error import HTTPError
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from app.app_context import AppContext
-from app.i18n import t
 from app.net.http_utils import urlopen
-from app.version import __version__
+from app.version import __version__, REPO_SLUG
 from app.ui.update_prompt_dialog import UpdatePromptDialog
 
-REPO_SLUG = "sukun-inu/RakuPrints"
+from app.i18n import t
+
 GITHUB_API = "https://api.github.com/repos/{slug}/releases/latest"
 
 
@@ -92,6 +93,9 @@ class UpdateChecker(QtCore.QThread):
             notes = str(payload.get("body") or "")
             info = UpdateInfo(tag=tag, version=tag.lstrip("v"), url=html_url, assets=list(assets), notes=notes)
             self.checked.emit(info, "")
+        except HTTPError as exc:
+            # A new fork has no latest release until its first build is published.
+            self.checked.emit(None, "" if exc.code == 404 else str(exc))
         except Exception as exc:
             self.checked.emit(None, str(exc))
 
