@@ -20,10 +20,19 @@ Windows 批量打印工具，可将 PDF、Excel、Word 和 PowerPoint 文件加�
 
 ## 环境要求
 
-- Windows。
+- Windows 10/11，64 位。
 - 打印 Excel、Word、PowerPoint 需要本机安装对应的 Microsoft Office 桌面应用。
 - 仅打印 PDF 不需要 Microsoft Office。
 - 从源码运行需要 Python，以及 [requirements.txt](requirements.txt) 中的依赖。本次开发验证使用 Python 3.12。
+
+## 下载 Windows 版本
+
+在[本 Fork 的 Releases](https://github.com/beizhi97/RakuPrints/releases) 下载
+`RakuPrint_0.3.4_Windows_x64.zip`，解压完整文件夹后运行 `RakuPrint.exe`，无需安装 Python。
+请保留同目录的 `_internal` 文件夹；中文说明和许可证也附在压缩包内。
+
+此版本作为预览版发布：已进行自动测试和打包启动检查，尚未经过实体打印机验证。
+Office 文件仍需本机安装对应的 Microsoft Office 桌面应用。
 
 ## 从源码运行
 
@@ -39,7 +48,7 @@ python -m venv .venv
 
 在右侧“显示”区域将语言设为“中文(简体)”。初次启动默认跟随系统语言；中文 Windows 会自动选用简体中文。
 
-上游已经发布的安装包不包含本 Fork 的修改。如需安装包，请查看[本 Fork 的 Releases](https://github.com/beizhi97/RakuPrints/releases)，以实际发布的文件为准；未发布时请从源码运行。
+上游已经发布的安装包不包含本 Fork 的修改。本 Fork 当前提供免安装 ZIP 包，下载方式见上文。
 
 ## 开始使用
 
@@ -60,6 +69,9 @@ python -m venv .venv
 
 # 构建 Windows 程序
 .\.venv\Scripts\python.exe -m PyInstaller RakuPrint.spec --noconfirm
+
+# 检查打包后的启动、退出及 PDF 子进程，不向设备打印
+.\.venv\Scripts\python.exe scripts\verify_windows_package.py dist\RakuPrint\RakuPrint.exe
 ```
 
 页码功能已经用实际 PDF 绘制输出、模拟打印后端，以及本机 Microsoft Office 12.0 的原生 PDF 导出验证。未向实体打印机发送测试任务；设备打印效果仍需实际确认。页码语义与 Excel 工作表规则见[指定打印页](docs/USAGE.zh-CN.md#8-指定打印页)。

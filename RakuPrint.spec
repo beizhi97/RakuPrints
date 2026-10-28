@@ -13,6 +13,9 @@ a = Analysis(
     datas=[
         ('icon.ico', '.'),
         ('icon.png', '.'),
+        ('LICENSE', '.'),
+        ('README.zh-CN.md', '.'),
+        ('docs/USAGE.zh-CN.md', 'docs'),
     ],
     hiddenimports=[
         'win32print',
@@ -25,8 +28,6 @@ a = Analysis(
         'PySide6.QtWidgets',
         'PySide6.QtPrintSupport',
         'fitz',
-        'fitz.fitz',
-        'fitz._fitz',
         'fitz.utils',
         'certifi',
         'certifi_win32',
@@ -39,6 +40,13 @@ a = Analysis(
     optimize=0,
     cipher=block_cipher,
 )
+
+# Qt uses the Windows ICU API. A build host may also have Poppler/Conda's
+# incompatible icuuc.dll on PATH; let Windows load its own system DLL.
+a.binaries = [
+    entry for entry in a.binaries
+    if Path(entry[0]).name.lower() not in {'icuuc.dll', 'icuin.dll'}
+]
 
 pyz = PYZ(a.pure, cipher=block_cipher)
 

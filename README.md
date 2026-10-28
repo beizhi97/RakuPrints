@@ -38,9 +38,11 @@ anything reaches paper keeps a wrong setting from becoming a hundred wasted page
 
 ## Using it
 
-Download `RakuPrint_Setup_x.x.x.exe` from
-[this fork's Releases](https://github.com/beizhi97/RakuPrints/releases) and run it, if a
-build has been published. Otherwise, follow the [source run instructions](README.zh-CN.md).
+Download `RakuPrint_0.3.4_Windows_x64.zip` from
+[this fork's Releases](https://github.com/beizhi97/RakuPrints/releases), extract the
+whole folder, and run `RakuPrint.exe`. Keep the `_internal` folder beside the EXE.
+Python is not required. This preview has not been tested on a physical printer.
+For development, follow the [source run instructions](README.zh-CN.md).
 
 1. Start the app
 2. Drag in the files you want printed
