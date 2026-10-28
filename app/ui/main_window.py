@@ -32,6 +32,7 @@ from app.ui.language import apply_ui_language
 from app.ui.excel_sheet_selector import ExcelSheetSelectorDialog
 from app.ui.excel_orientation_dialog import ExcelOrientationDialog
 from app.ui.pdf_options_dialog import PdfOptionsDialog
+from app.ui.page_range_dialog import PageRangeDialog
 from app.ui.usage_dialog import UsageDialog
 from app.ui.document_preview_panel import DocumentPreviewPanel
 from app.ui.preview_window import PreviewWindow
@@ -97,6 +98,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.print_selected_action = QtGui.QAction(self)
         self.printer_selected_action = QtGui.QAction(self)
         self.pdf_options_action = QtGui.QAction(self)
+        self.page_range_action = QtGui.QAction(self)
         self.excel_sheets_action = QtGui.QAction(self)
         self.move_up_action = QtGui.QAction(self)
         self.move_down_action = QtGui.QAction(self)
@@ -116,6 +118,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.print_selected_action.setShortcut(QtGui.QKeySequence.Print)
         self.printer_selected_action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+P"))
         self.pdf_options_action.setShortcut(QtGui.QKeySequence("Ctrl+Alt+P"))
+        self.page_range_action.setShortcut(QtGui.QKeySequence("Ctrl+Alt+R"))
         self.excel_sheets_action.setShortcut(QtGui.QKeySequence("Ctrl+Alt+E"))
         self.preview_toggle_action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+V"))
         self.usage_action.setShortcut(QtGui.QKeySequence.HelpContents)
@@ -130,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.print_selected_action.triggered.connect(self._on_print_selected_action)
         self.printer_selected_action.triggered.connect(self._on_printer_selected_action)
         self.pdf_options_action.triggered.connect(self._on_pdf_options_action)
+        self.page_range_action.triggered.connect(lambda: self._on_page_ranges(self.file_list.selected_job_ids()))
         self.excel_sheets_action.triggered.connect(self._on_excel_sheets_action)
         self.move_up_action.triggered.connect(lambda: self.file_list.move_selected(-1))
         self.move_down_action.triggered.connect(lambda: self.file_list.move_selected(1))
@@ -143,6 +147,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.file_menu.addAction(self.add_files_action)
         self.file_menu.addAction(self.add_folder_action)
+        self.file_menu.addAction(self.page_range_action)
         self.file_menu.addAction(self.apply_rules_action)
         self.file_menu.addAction(self.apply_rules_force_action)
         self.file_menu.addAction(self.preview_toggle_action)
@@ -186,6 +191,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.command_bar.addSeparator()
         self.command_bar.addAction(self.start_print_action)
         self.command_bar.addAction(self.print_selected_action)
+        self.command_bar.addAction(self.page_range_action)
         self.command_bar.addAction(self.retry_failed_action)
         self.command_bar.addSeparator()
         self.command_bar.addAction(self.move_up_action)
@@ -211,6 +217,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.file_list.print_selected_requested.connect(self._on_print_selected)
         self.file_list.printer_selected_requested.connect(self._on_printer_selected)
         self.file_list.pdf_options_requested.connect(self._on_pdf_options_requested)
+        self.file_list.page_range_requested.connect(self._on_page_ranges)
         self.file_list.column_widths_changed.connect(self._on_column_widths_changed)
         self.file_list.selectionModel().selectionChanged.connect(self._on_file_selection_changed)
         self.preview_panel.zoom_mode_changed.connect(self._on_preview_zoom_mode_changed)
@@ -262,6 +269,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.print_selected_action.setText(t("action_print_selected"))
         self.printer_selected_action.setText(t("action_set_printer"))
         self.pdf_options_action.setText(t("action_pdf_options"))
+        self.page_range_action.setText(t("action_page_range"))
         self.excel_sheets_action.setText(t("action_excel_sheets"))
         self.move_up_action.setText(t("action_move_up"))
         self.move_down_action.setText(t("action_move_down"))
@@ -338,6 +346,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.print_selected_action.setEnabled(False)
             self.printer_selected_action.setEnabled(False)
             self.pdf_options_action.setEnabled(False)
+            self.page_range_action.setEnabled(False)
             self.excel_sheets_action.setEnabled(False)
             self.move_up_action.setEnabled(False)
             self.move_down_action.setEnabled(False)
@@ -347,6 +356,7 @@ class MainWindow(QtWidgets.QMainWindow):
         jobs = self.file_list.selected_jobs()
         has_selection = bool(jobs)
         self.print_selected_action.setEnabled(has_selection)
+        self.page_range_action.setEnabled(has_selection)
         self.printer_selected_action.setEnabled(has_selection)
         self.delete_action.setEnabled(has_selection)
         self.pdf_options_action.setEnabled(any(job.file_type == FileType.PDF for job in jobs))
@@ -744,6 +754,20 @@ class MainWindow(QtWidgets.QMainWindow):
         if not job_ids:
             return
         self._on_printer_selected(job_ids)
+
+    def _on_page_ranges(self, job_ids: list[str]) -> None:
+        if not self.file_list.isEnabled():
+            return
+        ids = set(job_ids)
+        jobs = [job for job in self._job_manager.jobs() if job.id in ids]
+        if not jobs:
+            return
+        selections, ok = PageRangeDialog.get_ranges(jobs, self)
+        if ok:
+            try:
+                self._job_manager.set_page_ranges(selections)
+            except ValueError as exc:
+                QtWidgets.QMessageBox.warning(self, t("page_range_title"), str(exc))
 
     def _on_pdf_options_action(self) -> None:
         job_ids = self.file_list.selected_job_ids()

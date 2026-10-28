@@ -7,6 +7,7 @@ from PySide6 import QtCore
 from app.app_context import AppContext
 from app.controller.job_manager import JobManager
 from app.model.print_job import PrintJob, FileType, JobStatus
+from app.model.page_range import parse_page_ranges
 from app.backend.pdf_backend import PdfBackend
 from app.backend.word_backend import WordBackend
 from app.backend.excel_backend import ExcelBackend
@@ -55,6 +56,7 @@ class JobExecutor(QtCore.QThread):
             self.progress.emit(completed, total, job.file_name)
 
             try:
+                parse_page_ranges(job.page_range)
                 self._logger.info(
                     "Printing %s | printer=%s copies=%s duplex=%s",
                     job.file_path,
@@ -64,6 +66,7 @@ class JobExecutor(QtCore.QThread):
                 )
                 if job.paper_size:
                     self._logger.info("Paper size: %s", job.paper_size)
+                self._logger.info("Pages: %s", job.page_range or "all")
                 backend = self._resolve_backend(job)
                 backend.print(job)
                 self.job_status.emit(job.id, JobStatus.SUCCESS, "")

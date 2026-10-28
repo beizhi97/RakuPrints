@@ -7,6 +7,7 @@ from app.app_context import AppContext
 from app.backend.paper_utils import is_supported_name, normalize_name, size_key_from_points
 from app.backend.printer_utils import get_default_printer_name, list_paper_sizes
 from app.model.print_job import PrintJob
+from app.backend.office_page_printing import print_ppt_pages
 
 from app.i18n import t
 
@@ -51,7 +52,7 @@ class PptBackend:
             app.Visible = False
             if hasattr(app, "DisplayAlerts"):
                 app.DisplayAlerts = False
-            presentation = app.Presentations.Open(job.file_path, WithWindow=False)
+            presentation = app.Presentations.Open(job.file_path, ReadOnly=True, WithWindow=False)
             printer_name = _resolve_printer_name(job)
             _assert_printer_paper_supported(printer_name, job.paper_size)
             if job.paper_size:
@@ -64,7 +65,10 @@ class PptBackend:
                         raise RuntimeError(t("error_paper_mismatch", application="PowerPoint"))
             if job.printer_name:
                 app.ActivePrinter = job.printer_name
-            presentation.PrintOut(Copies=job.copies)
+            if job.page_range:
+                print_ppt_pages(self._context, job, presentation)
+            else:
+                presentation.PrintOut(Copies=job.copies)
             _wait_for_print_queue(app)
         finally:
             if presentation is not None:

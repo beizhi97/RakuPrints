@@ -48,6 +48,7 @@ class PrintJob:
     page_count: int | None = None
     page_count_failed: bool = False
     page_count_revision: int = 0
+    page_range: str = ""
     pdf_scale_mode: str | None = None
     pdf_scale_percent: int | None = None
     pdf_auto_rotate: bool | None = None

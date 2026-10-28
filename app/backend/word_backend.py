@@ -7,6 +7,7 @@ from app.app_context import AppContext
 from app.backend.paper_utils import is_supported_name
 from app.backend.printer_utils import get_default_printer_name, list_paper_sizes
 from app.model.print_job import PrintJob
+from app.backend.office_page_printing import print_word_pages
 
 from app.i18n import t
 
@@ -63,7 +64,10 @@ class WordBackend:
                     raise RuntimeError(t("error_paper_mismatch", application="Word"))
                 doc.PageSetup.PaperSize = paper_const
             _apply_word_centering(doc)
-            doc.PrintOut(Copies=job.copies, Background=False)
+            if job.page_range:
+                print_word_pages(self._context, job, doc)
+            else:
+                doc.PrintOut(Copies=job.copies, Background=False)
             _wait_for_print_queue(app)
         finally:
             if doc is not None:

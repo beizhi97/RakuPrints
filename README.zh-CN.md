@@ -15,6 +15,7 @@ Windows 批量打印工具，可将 PDF、Excel、Word 和 PowerPoint 文件加�
 - 中文界面优先使用微软雅黑，并加载 Qt 的简体中文标准按钮翻译。
 - 修复切换语言、刷新设置选项时重复触发设置变更信号的问题。
 - 提供[中文使用说明](docs/USAGE.zh-CN.md)，说明“勾选”和“选中”的区别。
+- 支持每个文件独立设置打印页码，例如 `2`、`3-6`、`1,3,5-8`，适用于 PDF、Word、Excel 和 PowerPoint。
 - 更新检查与在线更新说明指向本 Fork；尚未发布 Release 时视为暂无更新。
 
 ## 环境要求
@@ -47,6 +48,8 @@ python -m venv .venv
 3. 点击“开始打印”，打印所有已勾选的文件。也可选中若干行，点击“打印所选文件”。
 4. 如有失败任务，在“帮助 → 日志摘要”中查看详情，或点击“重试失败任务”。
 
+**只打印某个文件的指定页**：选中文件，点击“指定打印页”（或右键菜单、`Ctrl+Alt+R`），填写页码后确认，再点击“打印所选文件”。留空恢复全部页；多选时可在同一窗口逐个填写不同范围。列表的“打印页码”列会显示当前设置，双击该列也可修改。
+
 “移出列表”只移除队列记录，不会删除磁盘上的原文件。更多操作见[中文使用说明](docs/USAGE.zh-CN.md)。
 
 ## 开发验证与构建
@@ -57,6 +60,16 @@ python -m venv .venv
 
 # 构建 Windows 程序
 .\.venv\Scripts\python.exe -m PyInstaller RakuPrint.spec --noconfirm
+```
+
+页码功能已经用实际 PDF 绘制输出、模拟打印后端，以及本机 Microsoft Office 12.0 的原生 PDF 导出验证。未向实体打印机发送测试任务；设备打印效果仍需实际确认。页码语义与 Excel 工作表规则见[指定打印页](docs/USAGE.zh-CN.md#8-指定打印页)。
+
+已安装 Microsoft Office 的 Windows 环境可运行原生导出验证脚本。脚本仅创建内存中的示例文档、导出临时 PDF 并检查取页结果，不调用设备打印：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\verify_page_exports.py word
+.\.venv\Scripts\python.exe scripts\verify_page_exports.py excel
+.\.venv\Scripts\python.exe scripts\verify_page_exports.py ppt
 ```
 
 可执行文件输出到 `dist\RakuPrint\RakuPrint.exe`。创建安装程序的现有入口为 `scripts\build.ps1`，需要 Inno Setup 6；安装器目前保留上游的日文和英文界面。

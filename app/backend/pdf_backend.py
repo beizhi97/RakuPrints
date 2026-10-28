@@ -9,6 +9,7 @@ import sys
 
 from app.app_context import AppContext
 from app.model.print_job import PrintJob
+from app.model.page_range import resolve_page_indices
 from app.backend.pdf_options import resolve_pdf_options
 from app.backend.paper_utils import is_supported_name, normalize_name, size_key_from_points
 from app.backend.printer_utils import get_default_printer_name, list_paper_sizes
@@ -37,13 +38,13 @@ def _assert_printer_paper_supported(printer_name: str, paper_size: str) -> None:
         raise RuntimeError(t("error_paper_unsupported"))
 
 
-def _assert_pdf_paper_matches(doc, paper_size: str) -> None:
+def _assert_pdf_paper_matches(doc, paper_size: str, page_indices=None) -> None:
     if not paper_size:
         return
     target_key = normalize_name(paper_size)
     if not target_key:
         return
-    for page_index in range(doc.page_count):
+    for page_index in page_indices if page_indices is not None else range(doc.page_count):
         page = doc.load_page(page_index)
         rect = page.rect
         page_key = size_key_from_points(rect.width, rect.height)
@@ -80,9 +81,10 @@ class PdfBackend:
         try:
             if page_count <= 0:
                 raise RuntimeError(t("error_pdf_empty"))
+            page_indices = resolve_page_indices(job.page_range, page_count)
             printer_name = _resolve_printer_name(job)
             _assert_printer_paper_supported(printer_name, job.paper_size)
-            _assert_pdf_paper_matches(doc, job.paper_size)
+            _assert_pdf_paper_matches(doc, job.paper_size, page_indices)
         finally:
             try:
                 doc.close()
@@ -107,6 +109,13 @@ class PdfBackend:
             }
         )
         max_pages = 10
+        if job.page_range:
+            # Keep the bounded rendering batches, but collate complete copies.
+            # Even-sized batches also keep duplex page pairs together.
+            for _copy in range(job.copies):
+                for start in range(0, len(page_indices), max_pages):
+                    self._run_worker(dict(payload, copies=1, page_indices=page_indices[start:start + max_pages]))
+            return
         if page_count <= max_pages:
             self._run_worker(payload)
             return

@@ -12,6 +12,7 @@ from app.backend.printer_utils import (
     set_default_printer,
 )
 from app.model.print_job import PrintJob
+from app.backend.office_page_printing import print_excel_pages
 
 from app.i18n import t
 
@@ -135,7 +136,8 @@ class ExcelBackend:
                     if auto_orientation:
                         sheet.PageSetup.Orientation = _suggest_sheet_orientation(sheet, win32com.client.constants)
                     _apply_sheet_centering(sheet)
-                    sheet.PrintOut(Copies=job.copies)
+                    if not job.page_range:
+                        sheet.PrintOut(Copies=job.copies)
             else:
                 for sheet in workbook.Worksheets:
                     if paper_const is not None:
@@ -143,7 +145,10 @@ class ExcelBackend:
                     if auto_orientation:
                         sheet.PageSetup.Orientation = _suggest_sheet_orientation(sheet, win32com.client.constants)
                     _apply_sheet_centering(sheet)
-                workbook.PrintOut(Copies=job.copies)
+                if not job.page_range:
+                    workbook.PrintOut(Copies=job.copies)
+            if job.page_range:
+                print_excel_pages(self._context, job, workbook)
             _wait_for_print_queue(app)
         finally:
             if default_changed and default_before:

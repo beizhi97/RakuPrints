@@ -12,6 +12,7 @@ from app.model.print_job import PrintJob, FileType, JobStatus
 from app.backend.printer_utils import get_default_printer_name
 from app.backend.excel_backend import ExcelBackend
 from app.i18n import t
+from app.model.page_range import normalize_page_range
 
 
 class JobManager(QtCore.QObject):
@@ -170,6 +171,18 @@ class JobManager(QtCore.QObject):
         self.job_updated.emit(job_id)
         self._queue_page_counts([job])
 
+    def set_page_ranges(self, selections: dict[str, str]) -> None:
+        # Validate the complete edit before modifying any job.
+        updates = []
+        for job_id, text in selections.items():
+            job = self.find_job_by_id(job_id)
+            if job is not None:
+                total = None if job.file_type == FileType.EXCEL else job.page_count
+                updates.append((job, normalize_page_range(text, total)))
+        for job, value in updates:
+            job.page_range = value
+            self.job_updated.emit(job.id)
+
     def list_excel_sheets(self, file_path: str) -> list[str]:
         backend = ExcelBackend(self._context)
         return backend.list_sheets(file_path)
@@ -278,6 +291,8 @@ class JobManager(QtCore.QObject):
                 return (job.printer_name or t("label_auto")).lower()
             if column == 8:
                 return self._status_text(job.status).lower()
+            if column == 9:
+                return job.page_range
             return ""
 
         self._jobs.sort(key=key, reverse=descending)

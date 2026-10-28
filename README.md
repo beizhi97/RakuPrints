@@ -6,6 +6,10 @@ This fork includes Chinese UI improvements. Use this fork's source or its own
 [Releases](https://github.com/beizhi97/RakuPrints/releases) for these changes;
 upstream installers do not include them.
 
+**New: per-file print pages.** Select files, choose **Print pages** (`Ctrl+Alt+R`),
+and enter ranges such as `1,3,5-8`. Blank prints all pages. Supports PDF, Word,
+Excel and PowerPoint. See the [page numbering rules](docs/USAGE.zh-CN.md#8-指定打印页).
+
 <img src="assets/icon.png" width="80">
 
 A Windows app for printing a lot of files at once.

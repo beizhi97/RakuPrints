@@ -44,6 +44,22 @@ def _read_payload() -> dict:
     return json.loads(raw)
 
 
+def _resolve_payload_pages(payload: dict, page_count: int) -> list[int]:
+    if "page_indices" in payload:
+        indices = payload["page_indices"]
+        if not isinstance(indices, list) or not indices:
+            raise ValueError("Invalid page indices")
+        if any(type(index) is not int or not 0 <= index < page_count for index in indices):
+            raise ValueError("Invalid page indices")
+        return indices
+    start = int(payload.get("page_start", 0) or 0)
+    end = payload.get("page_end")
+    end = page_count - 1 if end is None else int(end)
+    if not 0 <= start <= end < page_count:
+        raise ValueError("Invalid page range")
+    return list(range(start, end + 1))
+
+
 def main() -> int:
     payload = _read_payload()
     file_path = payload.get("file_path", "")
@@ -51,8 +67,6 @@ def main() -> int:
     copies = int(payload.get("copies", 1))
     duplex = payload.get("duplex", "")
     paper_size = payload.get("paper_size", "")
-    page_start = int(payload.get("page_start", 0) or 0)
-    page_end_raw = payload.get("page_end", None)
     pdf_scale_mode = str(payload.get("pdf_scale_mode", "fit") or "fit")
     try:
         pdf_scale_percent = int(payload.get("pdf_scale_percent", 100))
@@ -83,22 +97,7 @@ def main() -> int:
             print("No pages in PDF", file=sys.stderr)
             return 4
 
-        if page_end_raw is None:
-            page_end = doc.page_count - 1
-        else:
-            page_end = int(page_end_raw)
-
-        if page_start < 0:
-            page_start = 0
-        if page_end < 0:
-            page_end = 0
-        if page_start >= doc.page_count:
-            page_start = doc.page_count - 1
-        if page_end >= doc.page_count:
-            page_end = doc.page_count - 1
-        if page_start > page_end:
-            print("Invalid page range", file=sys.stderr)
-            return 6
+        page_indices = _resolve_payload_pages(payload, doc.page_count)
 
         printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
         if printer_name:
@@ -159,8 +158,8 @@ def main() -> int:
         safe_scale_rect = scale_rect
         if safe_scale_rect.width() > 2 and safe_scale_rect.height() > 2:
             safe_scale_rect = safe_scale_rect.adjusted(1, 1, -1, -1)
-        for page_index in range(page_start, page_end + 1):
-            if page_index > page_start:
+        for output_index, page_index in enumerate(page_indices):
+            if output_index > 0:
                 printer.newPage()
             page = doc.load_page(page_index)
             rotate = False

@@ -64,6 +64,8 @@ class JobTableModel(QtCore.QAbstractTableModel):
                 return self._format_printer(job)
             if column == 8:
                 return self._format_status(job)
+            if column == 9:
+                return job.page_range or t("page_range_all")
 
         if role == QtCore.Qt.DecorationRole and column == 8:
             return self._status_icons.get(job.status)
@@ -75,6 +77,8 @@ class JobTableModel(QtCore.QAbstractTableModel):
             return self._status_colors.get(job.status)
 
         if role == QtCore.Qt.ToolTipRole:
+            if column == 9:
+                return job.page_range or t("page_range_all")
             if column == 5 and job.excel_sheets:
                 return "\n".join(job.excel_sheets)
             if job.message:
@@ -161,6 +165,7 @@ class JobTableModel(QtCore.QAbstractTableModel):
             t("table_pages"),
             t("table_printer"),
             t("table_status"),
+            t("table_page_range"),
         ]
 
     def _format_file_type(self, file_type: FileType) -> str:
@@ -289,6 +294,7 @@ class FileListView(QtWidgets.QTableView):
     print_selected_requested = QtCore.Signal(list)
     printer_selected_requested = QtCore.Signal(list)
     pdf_options_requested = QtCore.Signal(list)
+    page_range_requested = QtCore.Signal(list)
     column_widths_changed = QtCore.Signal(list)
 
     def __init__(self, job_manager: JobManager, parent: QtWidgets.QWidget | None = None) -> None:
@@ -381,6 +387,9 @@ class FileListView(QtWidgets.QTableView):
         if index.column() == 7:
             job = self._job_manager.get_job(index.row())
             self.printer_requested.emit(job.id)
+        elif index.column() == 9:
+            job = self._job_manager.get_job(index.row())
+            self.page_range_requested.emit([job.id])
 
     def _on_section_resized(self, _index: int, _old: int, _new: int) -> None:
         if self._suppress_width_signal:
@@ -455,6 +464,8 @@ class FileListView(QtWidgets.QTableView):
         printer_selected_action = menu.addAction(t("context_printer_select"))
         sheet_action = menu.addAction(t("context_excel_sheets"))
         pdf_options_action = menu.addAction(t("context_pdf_options"))
+        page_range_action = menu.addAction(t("action_page_range"))
+        page_range_action.setEnabled(bool(selected_ids))
         move_up_action = menu.addAction(t("context_move_up"))
         move_down_action = menu.addAction(t("context_move_down"))
         enable_action = menu.addAction(t("context_enable"))
@@ -485,6 +496,8 @@ class FileListView(QtWidgets.QTableView):
             self.printer_selected_requested.emit(selected_ids)
         elif action == pdf_options_action:
             self.pdf_options_requested.emit(selected_ids)
+        elif action == page_range_action:
+            self.page_range_requested.emit(selected_ids)
         elif action == move_up_action:
             self._move_selected(-1)
         elif action == move_down_action:
